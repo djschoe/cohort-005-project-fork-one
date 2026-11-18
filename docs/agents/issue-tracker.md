@@ -10,6 +10,7 @@ Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all op
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
+- **Set a PR body**: `gh api -X PATCH repos/<owner>/<repo>/pulls/<number> -F body=@<file>`. `gh pr edit` fails on the installed `gh` 2.45 with a "Projects (classic) is being deprecated" error and leaves the body unchanged.
 
 Target the `origin` remote's repo, never `ai-hero-dev/cohort-005-project`. `gh` does not reliably pick `origin`: when it can't prompt, it prefers a remote named `upstream`, and `npm run reset`/`cherry-pick` add one pointing at the course repo. Check with `gh repo set-default --view`; if it isn't `origin`'s repo, run `gh repo set-default <origin owner/repo>` (or pass `-R <origin owner/repo>`).
 

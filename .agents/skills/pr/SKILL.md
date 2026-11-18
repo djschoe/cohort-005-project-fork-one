@@ -12,6 +12,8 @@ metadata:
 Use this template for writing the PR body:
 
 ```markdown
+Spec: #<issue-number>
+
 ## Summary
 
 <diagram, diff-sketch, or tree>
@@ -35,6 +37,10 @@ Use this template for writing the PR body:
 ## Sections
 
 Skip all preambles and keep prose brief. Use the user's domain language from `GLOSSARY.md`.
+
+### Spec
+
+Find the originating issue: a reference in the commit messages, the branch name, or `gh issue list --state all --search "<feature>"`. Read it in full before writing Merge Danger, so spec drift is stated as fact, not guessed from code comments. Write `Spec: none` when no issue exists. `code-review` reads this line to find the spec.
 
 ### Summary
 
