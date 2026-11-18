@@ -79,7 +79,7 @@ export function YouTubePlayer({
     null
   );
   const [progress, setProgress] = useState(initialProgress);
-  const [videoDuration, setVideoDuration] = useState(
+  const [, setVideoDuration] = useState(
     durationMinutes ? durationMinutes * 60 : 0
   );
 

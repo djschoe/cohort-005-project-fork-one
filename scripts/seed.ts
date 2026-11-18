@@ -159,8 +159,7 @@ async function seed() {
 
   // Owns no courses — the instructor views must survive an instructor with
   // nothing to show.
-  const [instructor3] = db
-    .insert(schema.users)
+  db.insert(schema.users)
     .values({
       name: "Priya Nair",
       email: "priya.nair@ralph.dev",
@@ -2259,8 +2258,7 @@ This course is still in draft while the cluster examples are rewritten against t
   // ─── Purchases ───
   // Individual purchases for enrolled students
 
-  const [purchase1] = db
-    .insert(schema.purchases)
+  db.insert(schema.purchases)
     .values({
       userId: students[0].id, // Emma — bought course 1 individually
       courseId: course1.id,
