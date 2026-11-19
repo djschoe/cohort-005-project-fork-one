@@ -174,6 +174,28 @@ describe("lessonPage.load — discussion", () => {
       expect.objectContaining({ body: "A question", replies: [] }),
     ]);
   });
+
+  it("shows an edited comment's new body and when it was edited", async () => {
+    const question = await comment(studentId, null, "Frist question");
+    world.lessonPage.editComment(
+      { userId: studentId, commentId: question.id },
+      "First question",
+      LATER
+    );
+
+    const page = await world.lessonPage.load(
+      decisionsFor(world, studentPerson(studentId)),
+      lesson.id
+    );
+    if (page?.view !== "full") throw new Error("expected full view");
+
+    expect(page.comments).toEqual([
+      expect.objectContaining({
+        body: "First question",
+        editedAt: LATER.toISOString(),
+      }),
+    ]);
+  });
 });
 
 describe("lessonPage.submitQuiz", () => {
