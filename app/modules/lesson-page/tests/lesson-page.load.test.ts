@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { LessonProgressStatus, UserRole } from "~/db/schema";
-import { saveNote } from "~/lib/notes.server";
-import { toggleBookmark } from "~/lib/bookmarks.server";
 import {
   addLesson,
   addModule,
@@ -129,8 +127,9 @@ describe("lessonPage.load", () => {
 
   it("shows the Student's own Note and Bookmark", async () => {
     enroll(world.db, studentId, world.course.id);
-    saveNote(world.db, studentId, first.id, "  remember this ", NOW);
-    toggleBookmark(world.db, studentId, first.id, NOW);
+    const key = { userId: studentId, lessonId: first.id };
+    world.lessonPage.saveNote(key, "  remember this ", NOW);
+    world.lessonPage.toggleBookmark(key, NOW);
 
     const page = await loadFull(studentId, first.id);
     expect(page.note).toEqual({

@@ -5,6 +5,7 @@ import { markLessonComplete, type LessonKey } from "./lib/progress";
 import { findLessonComment } from "./lib/thread";
 import { findLessonQuiz } from "./lib/quiz";
 import { submitQuiz, type QuizSubmission } from "./lib/scoring";
+import { createLessonWrites } from "./lib/writes";
 
 /**
  * The lesson page's data, bound to a database. The app uses `lessonPage`,
@@ -14,6 +15,8 @@ import { submitQuiz, type QuizSubmission } from "./lib/scoring";
  */
 export function createLessonPage(database: Db) {
   return {
+    ...createLessonWrites(database),
+
     /**
      * Everything the lesson page shows: `view: "locked"` when the person may
      * not view the content, otherwise `view: "full"`. Records the visit as

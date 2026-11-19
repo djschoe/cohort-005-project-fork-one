@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { eq } from "drizzle-orm";
 import * as schema from "~/db/schema";
 import { LessonProgressStatus, UserRole } from "~/db/schema";
-import { createComment, deleteComment } from "~/lib/comments.server";
 import { fakeNotifications } from "~/lib/notifications.fake.server";
 import {
   addLesson,
@@ -38,14 +37,10 @@ async function comment(
   parentId: number | null,
   body: string
 ) {
-  const created = await createComment(
-    world.db,
-    authorId,
-    lesson.id,
-    parentId,
-    body,
-    NOW,
-    fakeNotifications()
+  const created = await world.lessonPage.createComment(
+    { userId: authorId, lessonId: lesson.id },
+    { parentId, body },
+    { now: NOW, notifications: fakeNotifications() }
   );
   if (!created.ok) throw new Error(created.error);
   return created.comment;
@@ -104,13 +99,10 @@ describe("lessonPage.load — discussion", () => {
     const question = await comment(studentId, null, "How do I start?");
     await comment(world.instructor.id, question.id, "Run npm start.");
     const lonely = await comment(admin.id, null, "Off topic");
-    await deleteComment(
-      world.db,
-      lonely.id,
-      admin.id,
+    await world.lessonPage.deleteComment(
+      { userId: admin.id, commentId: lonely.id },
       true,
-      NOW,
-      fakeNotifications()
+      { now: NOW, notifications: fakeNotifications() }
     );
 
     const page = await world.lessonPage.load(
@@ -140,13 +132,10 @@ describe("lessonPage.load — discussion", () => {
   it("keeps a deleted question that has replies, without its body", async () => {
     const question = await comment(studentId, null, "Secret question");
     await comment(world.instructor.id, question.id, "An answer");
-    await deleteComment(
-      world.db,
-      question.id,
-      studentId,
+    await world.lessonPage.deleteComment(
+      { userId: studentId, commentId: question.id },
       false,
-      NOW,
-      fakeNotifications()
+      { now: NOW, notifications: fakeNotifications() }
     );
 
     const page = await world.lessonPage.load(
@@ -169,13 +158,10 @@ describe("lessonPage.load — discussion", () => {
   it("drops a deleted reply", async () => {
     const question = await comment(studentId, null, "A question");
     const reply = await comment(world.instructor.id, question.id, "Oops");
-    await deleteComment(
-      world.db,
-      reply.id,
-      world.instructor.id,
+    await world.lessonPage.deleteComment(
+      { userId: world.instructor.id, commentId: reply.id },
       false,
-      NOW,
-      fakeNotifications()
+      { now: NOW, notifications: fakeNotifications() }
     );
 
     const page = await world.lessonPage.load(

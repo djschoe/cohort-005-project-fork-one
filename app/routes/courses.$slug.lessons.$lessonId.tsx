@@ -8,17 +8,9 @@ import {
   type CourseRef,
 } from "~/modules/permissions/course-permissions.server";
 import { lessonPage } from "~/modules/lesson-page/index.server";
-import {
-  createComment,
-  deleteComment,
-  editComment,
-} from "~/lib/comments.server";
 import { defaultNotifications } from "~/lib/notifications.server";
-import { toggleBookmark } from "~/lib/bookmarks.server";
-import { saveNote } from "~/lib/notes.server";
 import { MAX_NOTE_LENGTH } from "~/lib/notes";
 import { parseFormData, parseParams } from "~/lib/validation";
-import { db } from "~/db";
 import { Button } from "~/components/ui/button";
 import { FullLesson } from "~/components/lesson/full-lesson";
 import { LockedLesson } from "~/components/lesson/locked-lesson";
@@ -129,6 +121,7 @@ export async function action({ params, request }: Route.ActionArgs) {
   );
   const currentUserId = person.id;
   const { lessonId } = parseParams(params, lessonParamsSchema);
+  const key = { userId: currentUserId, lessonId };
 
   if (
     intent === "create-comment" ||
@@ -141,14 +134,10 @@ export async function action({ params, request }: Route.ActionArgs) {
         if (!parsed.success) {
           return { ok: false, error: "Enter a comment before posting." };
         }
-        const created = await createComment(
-          db,
-          currentUserId,
-          lessonId,
-          parsed.data.parentId ?? null,
-          parsed.data.body,
-          new Date(),
-          await defaultNotifications()
+        const created = await lessonPage.createComment(
+          key,
+          { parentId: parsed.data.parentId ?? null, body: parsed.data.body },
+          { now: new Date(), notifications: await defaultNotifications() }
         );
         if (!created.ok) return created;
         return { ok: true };
@@ -164,10 +153,8 @@ export async function action({ params, request }: Route.ActionArgs) {
         if (!lessonPage.findComment(lessonId, parsed.data.commentId)) {
           throw data("Comment not found", { status: 404 });
         }
-        const edited = editComment(
-          db,
-          parsed.data.commentId,
-          currentUserId,
+        const edited = lessonPage.editComment(
+          { userId: currentUserId, commentId: parsed.data.commentId },
           parsed.data.body,
           new Date()
         );
@@ -186,13 +173,10 @@ export async function action({ params, request }: Route.ActionArgs) {
       // else's takes the manage capability.
       const decisions = coursePermissions.decide(person, ref);
       const canModerate = decisions.found && decisions.manage.allowed;
-      const deleted = await deleteComment(
-        db,
-        parsed.data.commentId,
-        currentUserId,
+      const deleted = await lessonPage.deleteComment(
+        { userId: currentUserId, commentId: parsed.data.commentId },
         canModerate,
-        new Date(),
-        await defaultNotifications()
+        { now: new Date(), notifications: await defaultNotifications() }
       );
       if (!deleted.ok) return deleted;
       return { ok: true };
@@ -208,12 +192,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 
   if (intent === "toggle-bookmark" || intent === "save-note") {
     if (intent === "toggle-bookmark") {
-      const bookmarked = toggleBookmark(
-        db,
-        currentUserId,
-        lessonId,
-        new Date()
-      );
+      const bookmarked = lessonPage.toggleBookmark(key, new Date());
       return { ok: true, bookmarked };
     }
 
@@ -221,19 +200,13 @@ export async function action({ params, request }: Route.ActionArgs) {
     if (!parsed.success) {
       return { ok: false, error: parsed.errors.body };
     }
-    const saved = saveNote(
-      db,
-      currentUserId,
-      lessonId,
-      parsed.data.body,
-      new Date()
-    );
+    const saved = lessonPage.saveNote(key, parsed.data.body, new Date());
     if (!saved.ok) return saved;
     return { ok: true };
   }
 
   if (intent === "mark-complete") {
-    lessonPage.markComplete({ userId: currentUserId, lessonId }, new Date());
+    lessonPage.markComplete(key, new Date());
     return { success: true };
   }
 
