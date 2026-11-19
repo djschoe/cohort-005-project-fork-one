@@ -17,7 +17,7 @@ import { defaultNotifications } from "~/lib/notifications.server";
 import { toggleBookmark } from "~/lib/bookmarks.server";
 import { saveNote } from "~/lib/notes.server";
 import { MAX_NOTE_LENGTH } from "~/lib/notes";
-import { parseFormData } from "~/lib/validation";
+import { parseFormData, parseParams } from "~/lib/validation";
 import { db } from "~/db";
 import { Button } from "~/components/ui/button";
 import { FullLesson } from "~/components/lesson/full-lesson";
@@ -45,6 +45,16 @@ const saveNoteSchema = z.object({
       `Your note is over ${MAX_NOTE_LENGTH.toLocaleString("en")} characters, so it was not saved.`
     ),
 });
+
+const lessonParamsSchema = z.object({
+  lessonId: z.coerce.number().int().positive(),
+});
+
+const submitQuizSchema = z.object({
+  quizId: z.coerce.number().int().positive(),
+});
+
+const answerIdSchema = z.coerce.number().int().positive();
 
 const deleteCommentSchema = z.object({
   intent: z.literal("delete-comment"),
@@ -91,7 +101,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw data("Lesson not found", { status: 404 });
   }
 
-  const page = await lessonPage.load(decisions, Number(params.lessonId));
+  const { lessonId } = parseParams(params, lessonParamsSchema);
+  const page = await lessonPage.load(decisions, lessonId);
   if (!page) {
     throw data("Lesson not found", { status: 404 });
   }
@@ -117,7 +128,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     ref
   );
   const currentUserId = person.id;
-  const lessonId = Number(params.lessonId);
+  const { lessonId } = parseParams(params, lessonParamsSchema);
 
   if (
     intent === "create-comment" ||
@@ -227,10 +238,11 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (intent === "submit-quiz") {
-    const quizId = Number(formData.get("quizId"));
-    if (isNaN(quizId)) {
+    const parsedQuiz = parseFormData(formData, submitQuizSchema);
+    if (!parsedQuiz.success) {
       throw data("Invalid quiz ID", { status: 400 });
     }
+    const { quizId } = parsedQuiz.data;
     // Scope the quiz to this lesson so a quiz elsewhere can't be reached by
     // posting its id to this route.
     if (!lessonPage.findQuiz(lessonId, quizId)) {
@@ -241,10 +253,12 @@ export async function action({ params, request }: Route.ActionArgs) {
     const selectedAnswers: Record<number, number> = {};
     for (const [key, value] of formData.entries()) {
       if (key.startsWith("question-")) {
-        const questionId = Number(key.replace("question-", ""));
-        const optionId = Number(value);
-        if (!isNaN(questionId) && !isNaN(optionId)) {
-          selectedAnswers[questionId] = optionId;
+        const questionId = answerIdSchema.safeParse(
+          key.replace("question-", "")
+        );
+        const optionId = answerIdSchema.safeParse(value);
+        if (questionId.success && optionId.success) {
+          selectedAnswers[questionId.data] = optionId.data;
         }
       }
     }
