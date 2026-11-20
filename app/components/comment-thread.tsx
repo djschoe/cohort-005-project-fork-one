@@ -10,8 +10,6 @@ import { cn, formatRelativeTime } from "~/lib/utils";
 import { MAX_COMMENT_LENGTH } from "~/lib/comments";
 import type { RenderedComment } from "~/modules/lesson-page";
 
-export type { RenderedComment };
-
 function AuthorBadge({ label }: { label: string }) {
   return (
     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
