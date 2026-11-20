@@ -20,6 +20,10 @@ a type and you do not check it again. Coerce numbers through the schema, not
 `Number()`: `Number("")` is `0`, and an empty `lessonId` once opened lesson 0
 for every learner.
 
+An id, in a route param or a form field, parses through `idParam` from
+`~/lib/validation`: a positive integer. A bare `z.coerce.number()` still lets
+through `0`, `-1` and `1.5`.
+
 ## Check permission in the action, not only the loader
 
 A loader guard does not protect an action. They are separate requests. For a
@@ -32,19 +36,26 @@ Once a module owns a feature's data, the route asks the module for it and
 does not import `~/db` or `drizzle-orm` itself. The instructor analytics
 route gets everything from `instructorAnalytics`. A query in the loader
 splits the feature's rules across two files, and the module's tests stop
-covering what the page shows. `npm run lint:boundaries` enforces this for the
-instructor analytics route only; apply it to every other module by hand. See
-[app/modules/README.md](./app/modules/README.md).
+covering what the page shows. The same goes for writes: a route that reads
+through a module also writes through it, not through `~/lib/*.server`.
+
+`npm run lint:boundaries` enforces this for the instructor analytics route
+only. Every other route is yours to check: when the diff gives a module a
+feature's data, every query and write for that data in the route moves into
+the module. See [app/modules/README.md](./app/modules/README.md).
+
+## Keep a pull request to its ticket
+
+A pull request carries the change its ticket asks for. A refactor the change
+does not need, however welcome, goes in its own ticket, so the human reviewer
+can accept each one on its own terms. A styling ticket once arrived as a
+split of a 1,800-line route across 28 files.
 
 ## Arrange tests through the module under test
 
 Test setup calls the module's own functions. When the function you need does
 not exist, add it to the module rather than inserting rows directly, so a
 change to how the module stores its data leaves its tests alone.
-
-## Keep files under 5000 tokens
-
-Keep every file under 5000 tokens.
 
 ## Wrap related writes in a transaction
 

@@ -71,7 +71,12 @@ module.exports = {
         "No dependency cycles. Scope to `^${R}/` if you want to allow cycles outside packages.",
       severity: "error",
       from: {},
-      to: { circular: true },
+      // Runtime cycles only. A cycle through `import type` is erased at build
+      // time, and tsPreCompilationDeps (below) would otherwise report it.
+      to: {
+        circular: true,
+        viaOnly: { dependencyTypesNot: ["type-only"] },
+      },
     },
 
     // --- Layering (optional, off by default) ----------------------------------
@@ -104,9 +109,19 @@ module.exports = {
         path: ["^app/db/index\\.ts$", "^node_modules/better-sqlite3/"],
       },
     },
+    {
+      name: "modules-no-components",
+      comment:
+        "A module is the data and rules layer: it may not depend on the UI, not even for a type. Define the type in the module and let the component import it.",
+      severity: "error",
+      from: { path: `^${R}/` },
+      to: { path: "^app/components/" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },
+    // Counts `import type` too, so a module cannot reach the UI for a type.
+    tsPreCompilationDeps: true,
     tsConfig: { fileName: "tsconfig.json" },
     enhancedResolveOptions: {
       extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
