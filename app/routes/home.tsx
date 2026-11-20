@@ -234,50 +234,98 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-6 py-24 text-center">
-        <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
-          Learn to code,
-          <br />
-          <span className="text-muted-foreground">at your own pace</span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Structured courses built by experienced instructors. Track your
-          progress, take quizzes, and build real-world skills.
-        </p>
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Button asChild size="lg">
-            <Link to="/courses">
-              Browse Courses
-              <ArrowRight className="ml-2 size-4" />
-            </Link>
-          </Button>
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[3fr_2fr] lg:py-28">
+        <div>
+          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-sm font-medium text-muted-foreground">
+            <GraduationCap className="size-4 text-primary" />
+            {totalCourses} courses across {totalCategories} categories
+          </p>
+          <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+            Learn to code,
+            <br />
+            <span className="text-muted-foreground">at your own pace</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+            Structured courses built by experienced instructors. Track your
+            progress, take quizzes, and build real-world skills.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Button asChild size="lg">
+              <Link to="/courses">
+                Browse Courses
+                <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+            {currentUser ? (
+              <Button asChild size="lg" variant="outline">
+                <Link to="/dashboard">Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg" variant="outline">
+                <Link to="/signup">Create a free account</Link>
+              </Button>
+            )}
+          </div>
         </div>
+
+        {featuredCourses.length > 0 && (
+          <div className="hidden flex-col gap-3 lg:flex">
+            {featuredCourses.map((course, index) => (
+              <Link
+                key={course.id}
+                to={`/courses/${course.slug}`}
+                className={`group flex items-center gap-4 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md ${index % 2 === 1 ? "ml-8" : ""}`}
+              >
+                <CourseImage
+                  src={course.coverImageUrl}
+                  alt=""
+                  className="aspect-video w-24 shrink-0 rounded-md object-cover"
+                />
+                <div className="min-w-0">
+                  <p className="truncate font-semibold group-hover:text-primary">
+                    {course.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {course.lessonCount} lessons ·{" "}
+                    {course.instructorName ?? "Instructor"}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
-      <section className="border-y border-border bg-muted/50 py-16">
+      <section className="border-y border-border bg-muted/50 py-12">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 sm:grid-cols-3">
-          <div className="text-center">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <BookOpen className="size-6 text-primary" />
             </div>
-            <p className="text-2xl font-bold">{totalCourses}</p>
-            <p className="text-sm text-muted-foreground">Available Courses</p>
+            <div>
+              <p className="text-2xl font-bold">{totalCourses}</p>
+              <p className="text-sm text-muted-foreground">Available Courses</p>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <GraduationCap className="size-6 text-primary" />
             </div>
-            <p className="text-2xl font-bold">{totalCategories}</p>
-            <p className="text-sm text-muted-foreground">Categories</p>
+            <div>
+              <p className="text-2xl font-bold">{totalCategories}</p>
+              <p className="text-sm text-muted-foreground">Categories</p>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <Users className="size-6 text-primary" />
             </div>
-            <p className="text-2xl font-bold">Self-paced</p>
-            <p className="text-sm text-muted-foreground">
-              Learn on your schedule
-            </p>
+            <div>
+              <p className="text-2xl font-bold">Self-paced</p>
+              <p className="text-sm text-muted-foreground">
+                Learn on your schedule
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -341,8 +389,30 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       )}
 
       <footer className="border-t border-border py-8">
-        <div className="mx-auto max-w-6xl px-6 text-center text-sm text-muted-foreground">
-          Cadence
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-foreground">Cadence</p>
+            <p>Learn to code, at your own pace.</p>
+          </div>
+          <nav className="flex gap-6">
+            <Link to="/courses" className="hover:text-foreground">
+              Courses
+            </Link>
+            {currentUser ? (
+              <Link to="/dashboard" className="hover:text-foreground">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="hover:text-foreground">
+                  Log In
+                </Link>
+                <Link to="/signup" className="hover:text-foreground">
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </nav>
         </div>
       </footer>
 
