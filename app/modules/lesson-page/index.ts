@@ -3,3 +3,4 @@
 export type { LessonPageData } from "./lib/page";
 export type { LessonQuiz } from "./lib/quiz";
 export type { QuizResult, QuizSubmission } from "./lib/scoring";
+export type { RenderedComment } from "./lib/thread";
