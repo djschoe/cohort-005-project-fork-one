@@ -196,6 +196,15 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     countryTierInfo,
     countries,
   } = loaderData;
+  const accountCta = currentUser
+    ? { to: "/dashboard", label: "Go to Dashboard" }
+    : { to: "/signup", label: "Create a free account" };
+  const footerAccountLinks = currentUser
+    ? [{ to: "/dashboard", label: "Dashboard" }]
+    : [
+        { to: "/login", label: "Log In" },
+        { to: "/signup", label: "Sign Up" },
+      ];
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -279,15 +288,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
-            {currentUser ? (
-              <Button asChild size="lg" variant="outline">
-                <Link to="/dashboard">Go to Dashboard</Link>
-              </Button>
-            ) : (
-              <Button asChild size="lg" variant="outline">
-                <Link to="/signup">Create a free account</Link>
-              </Button>
-            )}
+            <Button asChild size="lg" variant="outline">
+              <Link to={accountCta.to}>{accountCta.label}</Link>
+            </Button>
           </div>
         </div>
 
@@ -407,20 +410,15 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             <Link to="/courses" className="hover:text-foreground">
               Courses
             </Link>
-            {currentUser ? (
-              <Link to="/dashboard" className="hover:text-foreground">
-                Dashboard
+            {footerAccountLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="hover:text-foreground"
+              >
+                {link.label}
               </Link>
-            ) : (
-              <>
-                <Link to="/login" className="hover:text-foreground">
-                  Log In
-                </Link>
-                <Link to="/signup" className="hover:text-foreground">
-                  Sign Up
-                </Link>
-              </>
-            )}
+            ))}
           </nav>
         </div>
       </footer>
