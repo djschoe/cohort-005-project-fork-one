@@ -281,8 +281,9 @@ jobs:
       - name: Post the inline comments
         # One review, event COMMENT, with a comment on each line the agent
         # left a finding on. They go where the fixes went: the fallback PR if
-        # the push was rejected. review.ts already dropped every comment
-        # outside the diff, because GitHub rejects the whole review for one.
+        # the push was rejected. review.ts already moved every comment outside
+        # the diff into the verdict, because GitHub rejects the whole review
+        # for one.
         env:
           GH_TOKEN: ${{ secrets.FACTORY_PAT }}
           TARGET: ${{ steps.fallback.outputs.number || github.event.pull_request.number }}

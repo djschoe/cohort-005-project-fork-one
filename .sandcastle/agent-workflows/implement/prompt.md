@@ -8,8 +8,9 @@ Read CODING_STANDARDS.md.
 
 - Behaviour goes in a deep module under app/modules/, behind an entry point a
   test can call, never inline in a loader.
-- Ship tests with the code. End with more passing tests than you started
-  with, and none failing.
+- Ship tests with the code: a test for each behaviour you add or change,
+  and none failing. Run `npm run test:mutation` once, after your last
+  commit.
 - `npm run build` must pass too.
 - Commit with `git commit` on the current branch. When the pre-commit hook
   rejects a commit, fix the work and commit again. The hook stays as it is:
