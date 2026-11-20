@@ -11,6 +11,9 @@ Or run the first three with `npm run check`.
 
 `npm run lint:oxlint` lints the whole repository with oxlint (`.oxlintrc.json`).
 
+The pre-commit hook rejects a file over 5000 tokens. A file already over that
+limit may be edited, but it may not grow.
+
 Modules are deep modules: see [app/modules/README.md](./app/modules/README.md) before adding or importing one.
 
 ### About agent-browser

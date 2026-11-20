@@ -1,5 +1,11 @@
 import { data } from "react-router";
-import type { z } from "zod";
+import { z } from "zod";
+
+/**
+ * An id from a route param or a form field: a positive integer. A bare
+ * `z.coerce.number()` lets through "" (as 0), negative ids and fractions.
+ */
+export const idParam = z.coerce.number().int().positive();
 
 type ParseSuccess<T> = { success: true; data: T };
 type ParseFailure = {
